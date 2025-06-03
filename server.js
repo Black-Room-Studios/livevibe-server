@@ -34,7 +34,7 @@ function getDistanceInMiles(lat1, lon1, lat2, lon2) {
 }
 
 app.post('/api/post', upload.single('image'), (req, res) => {
-  const { caption, anon_id, lat, lng } = req.body;
+  const { caption, anon_id, lat, lng, nickname } = req.body;
   const imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
   const id = `${Date.now()}-${anon_id}`;
   const timestamp = Date.now();
@@ -49,6 +49,7 @@ app.post('/api/post', upload.single('image'), (req, res) => {
     timestamp,
     likes: 0,
     likedBy: [],
+    nickname: nickname || 'Anonymous',
   };
 
   posts.push(post);
