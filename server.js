@@ -11,39 +11,16 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// Store in memory
 let posts = [];
 
+// Venue list
 const venues = [
-  {
-    id: 'saloon',
-    name: 'The Saloon Ventura',
-    lat: 34.280234,
-    lng: -119.294682
-  },
-  {
-    id: 'starlounge',
-    name: 'Star Lounge Ventura',
-    lat: 34.280738,
-    lng: -119.295983
-  },
-  {
-    id: 'boi',
-    name: 'Bank of Italy Cocktail Trust',
-    lat: 34.280535,
-    lng: -119.295153
-  }
+  { id: 'joycehouse', name: '587 Joyce Drive', lat: 34.15557, lng: -119.20068 },
+  { id: 'mirage', name: 'Mirage Lounge', lat: 34.12345, lng: -119.12345 },
+  { id: 'echo', name: 'Echo Club', lat: 34.12412, lng: -119.12412 }
 ];
 
-const storage = multer.diskStorage({
-  destination: 'uploads/',
-  filename: (req, file, cb) => {
-    const name = Date.now() + '-' + file.originalname;
-    cb(null, name);
-  }
-});
-const upload = multer({ storage });
-
+// Distance helper
 function getDistanceInMiles(lat1, lon1, lat2, lon2) {
   const toRad = deg => (deg * Math.PI) / 180;
   const R = 3958.8;
@@ -56,7 +33,17 @@ function getDistanceInMiles(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// === POST a new vibe ===
+// File storage
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    const name = Date.now() + '-' + file.originalname;
+    cb(null, name);
+  }
+});
+const upload = multer({ storage });
+
+// Post a new vibe
 app.post('/api/post', upload.single('image'), (req, res) => {
   const { caption, anon_id, lat, lng, nickname } = req.body;
   const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
@@ -67,9 +54,9 @@ app.post('/api/post', upload.single('image'), (req, res) => {
     id,
     caption,
     anon_id,
-    nickname: nickname || 'Anonymous',
     lat: parseFloat(lat),
     lng: parseFloat(lng),
+    nickname: nickname || 'Anonymous',
     imageUrl,
     timestamp,
     likes: 0,
@@ -87,7 +74,7 @@ app.post('/api/post', upload.single('image'), (req, res) => {
   res.json({ success: true, post });
 });
 
-// === GET filtered posts ===
+// Get nearby posts
 app.get('/api/posts', (req, res) => {
   const { lat, lng, radius = 2 } = req.query;
   const userLat = parseFloat(lat);
@@ -104,21 +91,19 @@ app.get('/api/posts', (req, res) => {
   res.json(nearby);
 });
 
-// === Like a post ===
+// Like a post
 app.post('/api/like/:id', (req, res) => {
   const { anon_id } = req.body;
   const post = posts.find(p => p.id === req.params.id);
-
   if (!post) return res.status(404).json({ error: 'Post not found' });
   if (post.likedBy.includes(anon_id)) return res.status(400).json({ error: 'Already liked' });
 
   post.likes += 1;
   post.likedBy.push(anon_id);
-
   res.json({ success: true, likes: post.likes });
 });
 
-// === GET venue list with vibeScore ===
+// Get venue list with vibeScore
 app.get('/api/venues', (req, res) => {
   const now = Date.now();
   const scored = venues.map(venue => {
@@ -128,16 +113,10 @@ app.get('/api/venues', (req, res) => {
     });
 
     const vibeScore = nearbyPosts.length * 2;
-
-    return {
-      ...venue,
-      vibeScore
-    };
+    return { ...venue, vibeScore };
   });
 
   res.json(scored);
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
