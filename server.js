@@ -15,7 +15,7 @@ let posts = [];
 
 // Venue list
 const venues = [
-  { id: 'joycehouse', name: '587 Joyce Drive', lat: 34.15557, lng: -119.20068 },
+  { id: 'joycehouse', name: '587 Joyce Drive', lat: 34.150827, lng: -119.191937 },
   { id: 'mirage', name: 'Mirage Lounge', lat: 34.12345, lng: -119.12345 },
   { id: 'echo', name: 'Echo Club', lat: 34.12412, lng: -119.12412 }
 ];
